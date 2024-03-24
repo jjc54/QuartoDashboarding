@@ -1,0 +1,105 @@
+---
+title: "Dashboarding with Quarto"
+author: "Joshua J. Cook"
+format: 
+  dashboard:
+    logo: images/logo.png
+    nav-buttons: [linkedin, github]
+---
+
+```{r}
+#| include: false
+
+packages <- c("tidyverse", "gt", "quarto")
+
+if (any(!sapply(packages, requireNamespace, quietly = TRUE))) {
+  install.packages(packages[!sapply(packages, requireNamespace, quietly = TRUE)])
+}
+
+library(tidyverse)
+library(RColorBrewer)
+library(gt)
+library(quarto)
+
+clinical_trials_fl <- readRDS("query_results_clean_final.rds")
+str(clinical_trials_fl)
+
+```
+
+# Page 1
+
+## Row 1 - Big Line Plot {height="70%"}
+
+```{r}
+#| title: "Annual CT Completion in FL"
+#| padding: 0px
+
+clinical_trials_fl_yearly_summary <- clinical_trials_fl %>%
+  mutate(year = year(completion_date)) %>%
+  group_by(year) %>%
+  summarise(count = n_distinct(nct_id)) %>%
+  filter(year >= 2014 & year <= 2023)
+
+# Extract the 7th color from the "Oranges" palette
+oranges_palette <- brewer.pal(8, "Oranges")
+dark_orange <- oranges_palette[7]
+
+# Line chart
+ggplot(clinical_trials_fl_yearly_summary, aes(x = year, y = count)) +
+  geom_line(color = dark_orange, size = 1) +  # Specify the color and size of the line
+  geom_point(color = dark_orange, size = 2) +  # Specify the color and size of the points
+  scale_x_continuous(breaks = 2014:2023) +  # Ensure all years are shown
+  labs(x = "Year",
+       y = "Successfully Completed Clinical Trials") +
+  theme_minimal()  # Use a minimal theme for aesthetics
+```
+
+## Row 2 - Two small bar and pie plots {height="50%"}
+
+```{r}
+#| title: "Phases of CT Completed in FL"
+#| padding: 0px
+
+clinical_trials_fl_phase_summary <- clinical_trials_fl %>%
+  distinct(nct_id, .keep_all = TRUE) %>%  # Keep only unique NCT_IDs
+  count(phase)  # Count the number of NCT_IDs for each phase
+
+clinical_trials_fl_phase_summary <- clinical_trials_fl_phase_summary %>%
+  mutate(across(where(is.character), ~na_if(., "Not Applicable")))
+
+# Bar chart
+ggplot(clinical_trials_fl_phase_summary, aes(x = phase, y = n, fill = phase)) +
+  geom_bar(stat = "identity") +  # Use identity stat to plot counts directly
+  scale_fill_brewer(palette = "Oranges") +
+  labs(x = "Phase",
+       y = "Successfully Completed Clinical Trials") +
+  theme_minimal() +  # Minimal theme for aesthetics
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for readability
+```
+
+```{r}
+#| title: "Top 10 Conditions of CT Completed in FL"
+#| padding: 0px
+
+clinical_trials_fl_condition_summary <- clinical_trials_fl %>%
+  group_by(condition_name) %>%
+  summarise(n = n_distinct(nct_id)) %>%
+  ungroup() %>%
+  arrange(desc(n)) %>%
+  top_n(10, n)  # Adjust this to include more or fewer conditions
+
+# 2. Create a pie chart
+ggplot(clinical_trials_fl_condition_summary, aes(x = "", y = n, fill = condition_name)) +
+  geom_bar(width = 1, stat = "identity", color = "white") +
+  coord_polar(theta = "y") +  # This converts the bar chart to a pie chart
+  scale_fill_brewer(palette = "Oranges") +  # Apply the Oranges palette
+  labs(x = NULL,
+       y = NULL,
+       fill = "Condition") +
+  theme_minimal() +
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_blank())
+```

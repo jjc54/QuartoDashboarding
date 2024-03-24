@@ -1,0 +1,5 @@
+project:
+  title: "QuartoDashboarding"
+  output-dir: docs
+
+editor: visual
