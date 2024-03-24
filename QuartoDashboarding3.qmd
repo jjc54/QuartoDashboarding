@@ -1,5 +1,5 @@
 ---
-title: "Dashboarding with Quarto"
+title: "Dashboarding with Quarto3"
 author: "Joshua J. Cook"
 format: 
   dashboard:
@@ -84,6 +84,8 @@ list(
 ```
 
 ## Row 2 - Big Line Plot
+
+::: {.card title="Timeline"}
 
 ```{r}
 #| title: "Annual CT Completion in FL"
