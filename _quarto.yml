@@ -1,5 +1,5 @@
 project:
-  title: "QuartoDashboarding"
+  title: "Dashboarding with Quarto 1.4"
   output-dir: docs
 
 editor: visual

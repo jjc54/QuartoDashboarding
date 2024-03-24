@@ -6,7 +6,10 @@ format:
     theme: united
     scrolling: true
     logo: images/logo.png
-    nav-buttons: [linkedin, github]
+    nav-buttons:
+      - website
+      - icon: person-raised-hand
+        href: https://joshua-j-cook-portfolios.netlify.app/ 
 embed-resources: true
 ---
 
@@ -49,13 +52,11 @@ clinical_trials_fl_terminated <- clinical_trials_fl %>%
 unique_study_types <- unique(clinical_trials_fl$study_type)
 ```
 
-# Page 1
-
 ## Row 1 - Value Boxes
 
 ```{r}
 #| content: valuebox
-#| title: "Total Completed"
+#| title: "Total Trials Completed"
 list(
   icon = "person-check-fill",
   color = "success",
@@ -65,7 +66,7 @@ list(
 
 ```{r}
 #| content: valuebox
-#| title: "Total Recruiting"
+#| title: "Total Trials Recruiting"
 list(
   icon = "person-fill-add",
   color = "warning",
@@ -75,7 +76,7 @@ list(
 
 ```{r}
 #| content: valuebox
-#| title: "Total Terminated"
+#| title: "Total Trials Terminated"
 list(
   icon = "person-fill-x",
   color = "danger",
@@ -85,10 +86,10 @@ list(
 
 ## Row 2 - Big Line Plot
 
-::: {.card title="Timeline"}
+::: {.card title="Annual Clinical Trial Completion in Florida"}
 
 ```{r}
-#| title: "Annual CT Completion in FL"
+#| title: "Annual Clinical Trial Completion in Florida"
 #| padding: 10px
 
 clinical_trials_fl_yearly_summary <- clinical_trials_fl %>%
@@ -114,13 +115,13 @@ gg <- ggplot(clinical_trials_fl_yearly_summary, aes(x = year, y = count)) +
 ggplotly(gg)
 ```
 
-It is important to consider the dramatic regulatory changes that occured in 2004/2005, and then again in 2015/2017, which potentially led to major shifts in registration and results submission compliance for ClinicalTrials.gov. <https://aact.ctti-clinicaltrials.org/points_to_consider/>
+These figures are only for the last 10 years. It is also important to consider the dramatic regulatory changes that occured in 2004/2005, and then again in 2015/2017, which potentially led to major shifts in registration and results submission compliance for ClinicalTrials.gov. <https://aact.ctti-clinicaltrials.org/points_to_consider/>
 :::
 
 ## Row 3 - Two small bar and pie plots
 
 ```{r}
-#| title: "Phases of CT Completed in FL"
+#| title: "Phases of Clinical Trials Completed in Florida"
 #| padding: 10px
 
 clinical_trials_fl_phase_summary <- clinical_trials_fl %>%
@@ -143,7 +144,7 @@ plot_ly(data = clinical_trials_fl_phase_summary,
 ```
 
 ```{r}
-#| title: "Top 10 Conditions of CT Completed in FL"
+#| title: "Top 10 Conditions of Clinical Trials Completed in Florida"
 #| padding: 10px
 
 clinical_trials_fl_condition_summary <- clinical_trials_fl %>%
