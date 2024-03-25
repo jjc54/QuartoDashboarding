@@ -1,6 +1,6 @@
 ---
 title: "Dashboarding with Quarto"
-author: "Joshua J. Cook"
+author: "Joshua J. Cook, Kirk Paul Lafler"
 format: 
   dashboard:
     theme: united
@@ -10,6 +10,9 @@ format:
       - website
       - icon: person-raised-hand
         href: https://joshua-j-cook-portfolios.netlify.app/ 
+      - li
+      - icon: linkedin
+        href: https://www.linkedin.com/in/KirkPaulLafler/
       - github
 embed-resources: true
 ---
@@ -88,7 +91,6 @@ list(
 ## Row 2 - Big Line Plot
 
 ::: {.card title="Annual Clinical Trial Completion in Florida"}
-
 ```{r}
 #| title: "Annual Clinical Trial Completion in Florida"
 #| padding: 10px

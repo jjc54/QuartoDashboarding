@@ -1,6 +1,7 @@
 ---
 title: "Dashboarding with Quarto"
-author: "Joshua J. Cook"
+author: "Joshua J. Cook, Kirk Paul Lafler"
+embed-resources: true
 format: 
   dashboard:
     logo: images/logo.png
