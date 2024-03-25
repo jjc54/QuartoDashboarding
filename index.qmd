@@ -10,6 +10,7 @@ format:
       - website
       - icon: person-raised-hand
         href: https://joshua-j-cook-portfolios.netlify.app/ 
+      - github
 embed-resources: true
 ---
 
