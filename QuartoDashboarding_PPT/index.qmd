@@ -1,0 +1,786 @@
+---
+title: "Quarto 1.4: Revolutionizing Open-source Dashboarding Capabilities"
+subtitle: "Dashboarding with Quarto"
+format:
+  clean-revealjs:
+    self-contained: true
+    preview-links: true
+    slide-number: false
+    code-line-numbers: true
+    logo: images/logo.png
+    css: styles.css
+author:
+  - name: Joshua J. Cook
+    orcid: 0000-0003-3508-7065
+    email: jcook0312@outlook.com
+    affiliations: Adjunct Professor / Clinical Researcher / Data Scientist
+  - name: Kirk Paul Lafler
+    email: KirkLafler@cs.com
+    affiliations: Consultant / Developer / Programmer / Data Scientist / Educator / Author
+date: last-modified
+bibliography: refs.bib
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+## Dashboards {.smaller}
+
+::: callout-note
+## Definition by Oxford
+
+"A graphical summary of various pieces of important information,
+typically used to give an overview of a business."
+:::
+
+**Use Cases:**
+
+-   Businesses
+-   Hospitals
+-   Schools
+-   Research Organizations
+
+**Dashboards** are subject to [frequent data updates]{.underline} with
+[consistent visualizations]{.underline}. This makes them widely used and
+highly influential analytic tools for decision makers.
+
+## Approaches to Dashboarding {.smaller}
+
+**Proprietary Options:**
+
+-   Tableau©
+
+-   Microsoft Power BI©
+
+-   SAS®
+
+**Open-Source Software (OSS) Options:**
+
+-   R *(Quarto, flexdashboard)*
+
+-   Python *(Quarto, dash)*
+
+-   Shiny *(R and Python)*
+
+On January 24^th^, 2024, Posit released **Quarto 1.4,** which introduced
+**Quarto Dashboards** that aim to streamline the creation of interactive
+dashboards, giving you an effortless way to lay out interactive
+components, visualizations, tabular data, and annotations.
+**Dashboarding before 1.4 was possible, but with limitations
+([WUSS-2023-Paper-165.pdf](https://www.wuss.org/proceedings/2023/WUSS-2023-Paper-165.pdf)).**
+
+This paper is not an comprehensive introduction to dashboards, but will
+f**ocus on the production of high-quality dashboards using Quarto 1.4, a
+free and open-source tool.**
+
+## A Sneak Peak
+
+### An open-source, plotly-interactable dashboard with Quarto 1.4.
+
+<https://jjc54.github.io/QuartoDashboarding/>
+
+## Before we proceed...
+
+### Requirements for the coding examples in this demo
+
+::: callout-warning
+## Required software
+
+### R packages
+
+``` r
+packages <- c("tidyverse", "gt", "quarto")
+
+if (any(!sapply(packages, requireNamespace, quietly = TRUE))) {
+  install.packages(packages[!sapply(packages, requireNamespace, quietly = TRUE)])
+}
+
+library(tidyverse) # Data wrangling & visualization
+library(gt) # Gold-standard table generation
+library(quarto) # Open-source publishing system for dashboard generaiton
+```
+
+### RStudio®
+
+We utilized RStudio® as the Integrated Development Environment (IDE). A
+Quarto Project should be setup (.Rproj) with any required subfolders.
+**The Quarto document should be renamed "index.qmd". Do not use a
+standard R script.**
+:::
+
+## Before we proceed... {.smaller}
+
+### The Data
+
+Publicly available dataset that has been extracted from the **Aggregate
+Analysis of ClinicalTrials.gov (AACT)** database (“Clinical Trials
+Transformation Initiative” n.d.).
+
+-   Represents all the **clinical trials** registered and completed
+    within the state of **Florida** of the United States between
+    23MAR2014-23MAR2024 (**10 years**).
+
+-   The AACT database updates daily, and thus this dataset, and its
+    dashboard, would need to be **continuously updated.**
+
+-   This dataset currently includes **73,500 observations of 39
+    variables**, relating to both the **protocol** designs and the
+    **completion** of the clinical trials.
+
+-   **All conditions and interventions are included for analysis,** and
+    the dataset was cleaned and wrangled by the authors prior to
+    dashboarding.
+
+## Before we proceed... {.smaller}
+
+### The Data
+
+```{r}
+clinical_trials_fl <- readRDS("query_results_clean_final.rds")
+str(clinical_trials_fl)
+```
+
+# Quarto 1.4 Syntax {background-color="#40666e"}
+
+## The Basics {.smaller}
+
+### Terms to Know
+
+-   **Dashboard** – a snapshot of information, typically a high-level
+    overview that can be narrowed-down, or “drilled down” to review
+    specific selections of data.
+
+    -   [**Static**]{.underline} **Dashboard** – dashboards that
+        provided a fixed view of data, without frequent updates and
+        frequently without the ability to drill-down.
+
+    -   [**Dynamic**]{.underline} **Dashboard** – dashboards that are
+        updated frequently, and often allow users to drill-down and
+        interact with the data.
+
+-   **Report** – a comprehensive document, typically in extreme detail
+    that has subsections for each topic of interest.
+
+Quarto can generate all these formats (and many more), but we will focus
+on [**dashboards**]{.underline} specifically.
+
+## The Basics {.smaller}
+
+### Languages
+
+**Dashboards written with Quarto 1.4+ can utilize:**
+
+-   **Python** (*via Jupyter notebooks - .ipynb*)
+
+-   **R** (*via plain text markdown - .qmd*) - [**used for the purposes
+    of this tutorial.**]{.bg style="--col: #e64173"}.
+
+-   **Julia**
+
+-   **Observable** (“Quarto - Quarto Dashboards” n.d.).
+
+Quarto dashboards can include various mixes of these languages as
+required by the user/company. Therefore, you could create a dashboard
+that includes both ggplot2 and matplotlib visualizations.
+
+## The Basics {.smaller}
+
+### Quarto Dashboard Components
+
+1.  **Navigation Bar** – serves to provide navigation between pages of
+    the dashboard (if more than one exists).
+
+2.  **Pages** – dashboards have traditionally been defined as a single
+    page. However, with more complex datasets, it may be useful to
+    divide the data into pages of a dashboard, each telling its own
+    story.
+
+3.  **Cards (set with rows/columns)** – cards are the *fundamental unit*
+    of quarto dashboards and are the containers of all data elements
+    (tables, figures, markdown). The content of cards maps to the cells
+    of a notebook or markdown document. Cells that do not produce output
+    are not considered cards. This advancement leads to easier location
+    specification compared to the referenced paper.
+
+4.  **Rows/Columns (defined by markdown headings)** – rows and columns
+    are used to define where each data element (tables, figures
+    markdown) is positioned on the dashboard.
+
+5.  **Tabsets** – these are groups of rows or columns on a dashboard
+    that can be used to further divide content.
+
+6.  **Sidebars and Toolbars** – sidebars are collapsible vertical panels
+    for inputs while toolbars are horizontal panels for inputs. This is
+    where filters, tick boxes, and other drill-down tools can be placed.
+
+The syntax associated with markdown is also outside the scope of this
+paper, but there are many free and publicly available resources to help
+with writing markdown syntax ([Quarto – Markdown
+Basics](https://quarto.org/docs/authoring/markdown-basics.html)).
+
+# Our First Quarto Dashboard {background-color="#40666e"}
+
+## The First Dashboard {.smaller}
+
+### Goals
+
+-   Visualize how many **clinical trials are successfully completed each
+    year in the state of Florida.**
+
+-   Visualize the **phase distribution of these clinical trials**, which
+    may help determine how many patients are receiving care via clinical
+    research (larger numbers of participants are required for higher
+    phase studies, especially phase 3 and phase 4).
+
+-   Visualize the **top 10 conditions that are being successfully
+    studied in Florida.**
+
+::: columns
+::: {.column width="50%"}
+![](images/layout.png)
+:::
+
+::: {.column width="50%"}
+-   We will organize the **three visuals** into one page with three
+    cards, divided into one column with two rows.
+
+-   We want chart 1 (the trials completed per year) to be emphasized
+    more, while the other two charts supplement our understanding of
+    chart 1.
+:::
+:::
+
+## The First Dashboard
+
+### YAML Header
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "2|3|4-7|8"
+
+---
+title: "Dashboarding with Quarto"
+author: "Joshua J. Cook, Kirk Paul Lafler"
+format: 
+  dashboard:
+    logo: images/logo.png
+    nav-buttons: [linkedin, github]
+embed-resources: true 
+---
+```
+
+## The First Dashboard
+
+### Content
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "|1-6|"
+
+# Page 1
+
+## Row 1 - Big Line Plot {height="70%"}
+
+#| title: "Annual CT Completion in FL"
+#| padding: 0px
+
+clinical_trials_fl_yearly_summary <- clinical_trials_fl %>%
+  mutate(year = year(completion_date)) %>%
+  group_by(year) %>%
+  summarise(count = n_distinct(nct_id)) %>%
+  filter(year >= 2014 & year <= 2023)
+
+# Extract the 7th color from the "Oranges" palette
+oranges_palette <- brewer.pal(8, "Oranges")
+dark_orange <- oranges_palette[7]
+
+# Line chart
+ggplot(clinical_trials_fl_yearly_summary, aes(x = year, y = count)) +
+  geom_line(color = dark_orange, size = 1) +  # Specify the color and size of the line
+  geom_point(color = dark_orange, size = 2) +  # Specify the color and size of the points
+  scale_x_continuous(breaks = 2014:2023) +  # Ensure all years are shown
+  labs(x = "Year",
+       y = "Successfully Completed Clinical Trials") +
+  theme_minimal()  # Use a minimal theme for aesthetics
+
+## Row 2 - Two small bar and pie plots {height="30%"}
+
+#| title: "Phases of CT Completed in FL"
+#| padding: 0px
+
+clinical_trials_fl_phase_summary <- clinical_trials_fl %>%
+  distinct(nct_id, .keep_all = TRUE) %>%  # Keep only unique NCT_IDs
+  count(phase)  # Count the number of NCT_IDs for each phase
+
+clinical_trials_fl_phase_summary <- clinical_trials_fl_phase_summary %>%
+  mutate(across(where(is.character), ~na_if(., "Not Applicable")))
+
+# Bar chart
+ggplot(clinical_trials_fl_phase_summary, aes(x = phase, y = n, fill = phase)) +
+  geom_bar(stat = "identity") +  # Use identity stat to plot counts directly
+  scale_fill_brewer(palette = "Oranges") +
+  labs(x = "Phase",
+       y = "Successfully Completed Clinical Trials") +
+  theme_minimal() +  # Minimal theme for aesthetics
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for readability
+
+#| title: "Top 10 Conditions of CT Completed in FL"
+#| padding: 0px
+
+clinical_trials_fl_condition_summary <- clinical_trials_fl %>%
+  group_by(condition_name) %>%
+  summarise(n = n_distinct(nct_id)) %>%
+  ungroup() %>%
+  arrange(desc(n)) %>%
+  top_n(10, n)  # Adjust this to include more or fewer conditions
+
+# 2. Create a pie chart
+ggplot(clinical_trials_fl_condition_summary, aes(x = "", y = n, fill = condition_name)) +
+  geom_bar(width = 1, stat = "identity", color = "white") +
+  coord_polar(theta = "y") +  # This converts the bar chart to a pie chart
+  scale_fill_brewer(palette = "Oranges") +  # Apply the Oranges palette
+  labs(x = NULL,
+       y = NULL,
+       fill = "Condition") +
+  theme_minimal() +
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_blank())
+```
+
+## The First Dashboard
+
+### Output (HTML)
+
+### ![](images/clipboard-2565309418.png){width="2746"}
+
+# Beyond the Basics {background-color="#40666e"}
+
+## The Final Dashboard {.smaller .scrollable}
+
+### Advanced Quarto Dashboard Components
+
+1.  **Fill v. Flow** – instead of defining explicit dimensions for
+    charts (like we did with height above), we can allow charts to fill
+    the available space {.fill} which is the *default* behavior, or
+    flowing to its natural height {.flow}. Plots in Shiny dashboards
+    dynamically resize.
+
+2.  **Scrolling** – for very large dashboards, scrolling could be
+    enabled, but it may also be useful to consider pagination or
+    tabsets.
+
+3.  **Padding** – padding (i.e., white space) can be added to charts to
+    make them more distinct from surrounding content. We disabled
+    padding in the example above.
+
+4.  **Interactivity** – this can be achieved using a combination of
+    htmlwidgets (which is utilized by packages such as Plotly, Leaflet,
+    and DT), as well as Shiny. This applies to both figures and tables
+    where drill-down, searchability, or dynamic resizing is preferred.
+
+5.  **Value Boxes** – value boxes are hallmarks of traditional
+    dashboards, frequently being utilized to describe single values such
+    as key performance indicators or counts of an important variable.
+    Value boxes are available in a variety of formats in Quarto 1.4 and
+    can be customized with colors and icons. Importantly, the single
+    value is pulled from a flat R value that will need to be extracted
+    from the dataframe (shown in the code below).
+
+6.  **Content is Context** – markdown content can be added anywhere in a
+    dashboard using the {.card} div, and can even be added within a
+    chart itself. This content can be dynamic by referencing in-line
+    code. Titles of charts can also be dynamic in the same way.
+
+7.  **Multiple Card Output** – if a card contains multiple charts, the
+    output can be organized using knitr options layout-ncol and
+    layout-nrow
+
+8.  **Theming** – Quarto dashboards have access to all the themes
+    available to other quarto documents and can be defined in the YAML
+    header. All available themes can have their components (font, font
+    size, color, table of contents, etc.) customized using Sass files
+    *(.scss).*
+
+9.  **Parameters** – computational parameters can be set using knitr (in
+    this case) or Jupyter. For knitr, this is defined in the YAML.
+    Setting parameters allows for reports to be generated for specific
+    subsets of a variable. For example, generating three versions of the
+    dashboard based on each subset of the study_type variable.
+
+## The Final Dashboard {.smaller}
+
+### Goals
+
+1.  Allow all figures to **fill the entire card space** *(code not shown
+    because that is the default behavior).*
+
+2.  Enable **scrolling**.
+
+3.  Add a small amount of **padding** to each chart.
+
+4.  Convert our ggplot2 figures to **Plotly** *(using the
+    ggplotly()function for some figures, but this did not always work as
+    shown in the code).*
+
+5.  Add a top row with **three value boxes** to describe the study
+    statuses.
+
+6.  Add some **context using markdown.**
+
+7.  Apply the **united theme.**
+
+8.  Add **custom navigation buttons:**
+
+## The Final Dashboard
+
+### YAML Header
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "6|7|9-16"
+
+---
+title: "Dashboarding with Quarto"
+author: "Joshua J. Cook, Kirk Paul Lafler"
+format: 
+  dashboard:
+    theme: united
+    scrolling: true
+    logo: images/logo.png
+    nav-buttons:
+      - website
+      - icon: person-raised-hand
+        href: https://joshua-j-cook-portfolios.netlify.app/ 
+      - li
+      - icon: linkedin
+        href: https://www.linkedin.com/in/KirkPaulLafler/
+      - github
+embed-resources: true 
+---
+```
+
+## The Final Dashboard
+
+### Content
+
+```{r}
+#| eval: false
+#| echo: true
+
+library(RColorBrewer) # For more colors
+library(plotly) # For interactivity
+
+clinical_trials_fl %>%
+  select(nct_id, overall_status) 
+
+clinical_trials_fl_completed <- clinical_trials_fl %>%
+  filter(overall_status == "Completed") %>%
+  summarise(total_unique_completed = n_distinct(nct_id)) %>%
+  pull(1)
+
+clinical_trials_fl_recruiting <- clinical_trials_fl %>%
+  filter(overall_status == "Recruiting") %>%
+  summarise(total_unique_completed = n_distinct(nct_id)) %>%
+  pull(1)
+
+clinical_trials_fl_terminated <- clinical_trials_fl %>%
+  filter(overall_status == "Terminated") %>%
+  summarise(total_unique_completed = n_distinct(nct_id)) %>%
+  pull(1) 
+
+# Page 1
+
+## Row 1 - Value Boxes
+
+#| content: valuebox
+#| title: "Total Trials Completed"
+list(
+  icon = "person-check-fill",
+  color = "success",
+  value = clinical_trials_fl_completed
+)
+
+#| content: valuebox
+#| title: "Total Trials Recruiting"
+list(
+  icon = "person-fill-add",
+  color = "warning",
+  value = clinical_trials_fl_recruiting
+)
+
+#| content: valuebox
+#| title: "Total Trials Terminated"
+list(
+  icon = "person-fill-x",
+  color = "danger",
+  value = clinical_trials_fl_terminated
+)
+
+## Row 2 - Big Line Plot
+
+::: {.card title=" Annual Clinical Trial Completion in Florida"}
+
+#| title: "Annual Clinical Trial Completion in Florida"
+#| padding: 10px
+
+clinical_trials_fl_yearly_summary <- clinical_trials_fl %>%
+  mutate(year = year(completion_date)) %>%
+  group_by(year) %>%
+  summarise(count = n_distinct(nct_id)) %>%
+  filter(year >= 2014 & year <= 2023)
+
+# Extract the 7th color from the "Oranges" palette
+oranges_palette <- brewer.pal(8, "Oranges")
+dark_orange <- oranges_palette[7]
+
+# Line chart
+gg <- ggplot(clinical_trials_fl_yearly_summary, aes(x = year, y = count)) +
+  geom_line(color = dark_orange, size = 1) +  # Specify the color and size of the line
+  geom_point(color = dark_orange, size = 2) +  # Specify the color and size of the points
+  scale_x_continuous(breaks = 2014:2023) +  # Ensure all years are shown
+  labs(x = "Year",
+       y = "Successfully Completed Clinical Trials") +
+  theme_minimal()  # Use a minimal theme for aesthetics
+
+# Convert the ggplot object to a plotly object
+ggplotly(gg)
+
+These figures are only for the last 10 years. It is also important to consider the dramatic regulatory changes that occured in 2004/2005, and then again in 2015/2017, which potentially led to major shifts in registration and results submission compliance for ClinicalTrials.gov. https://aact.ctti-clinicaltrials.org/points_to_consider/
+:::
+
+## Row 3 - Two small bar and pie plots
+
+#| title: " Phases of Clinical Trials Completed in Florida"
+#| padding: 10px
+
+clinical_trials_fl_phase_summary <- clinical_trials_fl %>%
+  distinct(nct_id, .keep_all = TRUE) %>%  # Keep only unique NCT_IDs
+  count(phase)  # Count the number of NCT_IDs for each phase
+
+clinical_trials_fl_phase_summary <- clinical_trials_fl_phase_summary %>%
+  mutate(across(where(is.character), ~na_if(., "Not Applicable")))
+
+# Bar chart; ggplotly() didn't work because of scales, reverted to full plotly
+
+plot_ly(data = clinical_trials_fl_phase_summary, 
+        x = ~phase, 
+        y = ~n, 
+        type = 'bar', 
+        color = ~phase, 
+        colors = "Oranges") %>%
+  layout(xaxis = list(title = "Phase"),
+         yaxis = list(title = "Successfully Completed Clinical Trials"))
+
+#| title: "Top 10 Conditions of Clinical Trials Completed in Florida"
+#| padding: 10px
+
+clinical_trials_fl_condition_summary <- clinical_trials_fl %>%
+  group_by(condition_name) %>%
+  summarise(n = n_distinct(nct_id)) %>%
+  ungroup() %>%
+  arrange(desc(n)) %>%
+  top_n(10, n)  # Adjust this to include more or fewer conditions
+
+# 2. Create a pie chart; same as above
+plot_ly(clinical_trials_fl_condition_summary, 
+                 labels = ~condition_name, 
+                 values = ~n, 
+                 type = 'pie', 
+                 textinfo = 'label+percent',
+                 marker = list(colors = RColorBrewer::brewer.pal(n = 8, name = "Oranges")),
+                 hole = 0.0) %>%
+  layout(title = 'Condition Distribution in Clinical Trials',
+         showlegend = TRUE,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+## The Final Dashboard {.smaller}
+
+### Output (HTML)
+
+<https://jjc54.github.io/QuartoDashboarding/>
+
+Although this dashboard can be interacted with (i.e., clicking and
+hovering reveals additional information), **it cannot yet be filtered or
+drilled down, which is a hallmark of modern dashboards.**
+
+# Advanced Dashboards & Deployment {background-color="#40666e"}
+
+## Advanced Dashboards {.smaller}
+
+### Layout Inputs, Drill Down, True Interactivity
+
+There are three ways to add **layout inputs** (i.e., *drill downs or
+filters*) in Quarto, each with their own distinguishing area and
+background color:
+
+1.  **Sidebars** – collapsible [vertical]{.underline} panels.
+
+2.  **Toolbars** – collapsible [horizontal]{.underline} panels.
+
+3.  **Card Inputs** – panel for [card-specific]{.underline} inputs;
+    these appear in the title area of a card for more condensed
+    organization.
+
+You define all three layout inputs using level two headers, much like
+rows.
+
+These features can be local to a page, or global across pages (requires
+a level one heading).
+
+Furthermore, they can be placed on any side of the page and can even be
+embedded into rows themselves for better clarity on what the input is
+affecting.
+
+This interactivity is provided by **htmlwidgets** (*R*), **Jupyter
+Widgets** (*Python*), or **Observable JS** (a dialect of *JavaScript*).
+
+## Advanced Dashboards {.smaller}
+
+### Shiny
+
+More flexible interactive components and drill down can be added using
+the following resources:
+
+-   **Shiny for R** – for dashboards that use knitr for computations
+    (**requires deployment to a server**).
+
+-   **Shiny for Python** – for dashboards that use Jupyter for
+    computations (**requires deployment to a server**).
+
+**Shiny** is beyond the scope of this paper, but resources are attached
+to learn basic Shiny syntax and deploy a Quarto dashboard using Shiny.
+
+[Diamonds Explorer
+(shinyapps.io)](https://jjallaire.shinyapps.io/diamonds/)
+
+## Advanced Dashboards {.smaller}
+
+### Deployment and Updates
+
+**Static dashboards have no server-dependency**, and thus can be
+published to any web server, including:
+
+-   **GitHub Pages** *(our method of choice).*
+
+-   **Quarto Pub.**
+
+-   **Posit Connect.**
+
+-   **Posit Cloud.**
+
+-   **Confluence.**
+
+## Advanced Dashboards {.smaller}
+
+### Deployment and Updates
+
+1.  [GitHub Desktop \| Simple collaboration from your
+    desktop](https://desktop.github.com/)
+
+2.  Ensure .qmd is named **index.qmd.**
+
+3.  Change the output directory to **docs** in the quart.yml file.
+
+4.  **Add existing repository** to GitHub Desktop.
+
+5.  **Commit/push changes** to your GitHub account.
+
+6.  Find your repository on the GitHub website, navigate to the Settings
+    tab, navigate to **Pages**. Set Source to "Deploy from a branch" and
+    set branch to "/docs" then save.
+
+7.  After a few moments, the website will render and the link will be
+    listed.
+
+8.  Any future changes can be commited/pushed in the same way, just make
+    sure the **HTML is rendered from RStudio® each time you commit.
+    GitHub Actions can automate this.**
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "|3"
+project:
+  title: " Dashboarding with Quarto 1.4"
+  output-dir: docs
+editor: visual
+```
+
+# Wrapping Up {background-color="#40666e"}
+
+## Tips & Tricks {.smaller}
+
+### A Few Things to Remember
+
+-   Not renaming the quarto markdown file (.qmd) to **“index.qmd” can
+    lead to severe issues when rendering and deploying the dashboard.**
+    Double check this file name if any issues are encountered. The
+    actual name of the dashboard (that appears on the dashboard itself)
+    can be whatever you want and is defined inside the quarto markdown
+    file.
+
+-   The GitHub Pages section of the Quarto documentation does not
+    utilize the GitHub Desktop Application ([Quarto – GitHub
+    Pages](https://quarto.org/docs/publishing/github-pages.html)). In
+    fact, most resources refer to terminal commands, but we do not
+    recommend them due to added complexity. **Try out the desktop
+    application!**
+
+-   **When in doubt, check the Dashboard Examples** (see Recommended
+    Reading). Our full code and example are also linked below.
+
+-   It can help to have some familiarity with Quarto’s other formats
+    before attempting dashboarding. **The syntax and structure follow
+    very similar patterns as other formats,** such as Quarto websites
+    and reports. 
+
+## Conclusion {.smaller}
+
+### We Hope You Try Quarto 1.4 Dashboards!
+
+-   The paper demonstrated how Quarto's cross-language support, combined
+    with its new and improved dashboarding functionality, provides a
+    **comprehensive environment for data reporting.**
+
+-   This integration is **crucial for many industries** where making
+    informed decisions often depends on understanding **complex datasets
+    that update over time.**
+
+-   By leveraging Quarto's new dashboarding tools, analysts from a
+    **variety of programming backgrounds** can more effectively present
+    their data, leading to **improved decision-making** processes and
+    clearer communication of findings.
+
+-   **Quarto 1.4 has an extraordinary opportunity to enhance open-source
+    data visualization and reporting practices within a multitude of
+    industries leaning toward open-source software.**
+
+## Acknowledgements & Contact Information {.smaller}
+
+The authors thanks **PharmaSUG** for their support through the PharmaSUG
+New Professionals Scholarship Program. Joshua J. Cook thanks his
+mentors, **Kirk Paul Lafler** (\@sasNerd), and **Dr. Achraf Cohen**, for
+their ongoing mentorship and support.
+
+::: columns
+::: {.column .center width="50%"}
+#### Joshua J. Cook, M.S. DS, M.S. CRM, ACRP-PM, CCRC
+
+![](images/Dot%20QR%20Code%2019FEB2024.png){fig-align="left"
+width="200"}
+:::
+
+::: {.column .center width="50%"}
+#### Kirk Paul Lafler, M.S. (\@sasNerd)
+
+![](images/clipboard-1320143235.png){width="203"}
+:::
+:::
